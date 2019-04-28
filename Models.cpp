@@ -13,9 +13,16 @@ enum parse_state: int8_t
 
 void MatMul3x1(float* C, const float* A, const float* B)
 {
-    C[0] = (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]);
-    C[1] = (A[3]*B[0]) + (A[4]*B[1]) + (A[5]*B[2]);
-    C[2] = (A[6]*B[0]) + (A[7]*B[1]) + (A[8]*B[2]);
+    if((A[0] == 0 && A[1] == 0 && A[2] == 0) || (B[0] == 0 && B[1] == 0 && B[2] == 0))
+    {
+        C = {};
+    }
+    else
+    {
+        C[0] = (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]);
+        C[1] = (A[3]*B[0]) + (A[4]*B[1]) + (A[5]*B[2]);
+        C[2] = (A[6]*B[0]) + (A[7]*B[1]) + (A[8]*B[2]);
+    }
 }
 
 void MatMul4x1(float* C, const float* A, const float* B)
