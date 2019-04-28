@@ -162,7 +162,7 @@ void Models::modifyAngle(const int16_t angle, const rotation_axis axis)
         B.value[0] = copy[current++];
 //        B.shape[0] = 3;
 //        B.shape[1] = 1;
-        float C[(int8_t)(A.shape[0]*B.shape[1])];
+        float C[3];
         MatMul3x1(C, A.value, B.value);
         memcpy(&copy[start], &C[0], 3*sizeof(float));
     }
@@ -186,7 +186,7 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
         H.value[0] = copy[current++];
 //        H.shape[0] = 3;
 //        H.shape[1] = 1;
-        float I[(int8_t)(s_zAngle.shape[0]*H.shape[1])];
+        float I[3];
         MatMul3x1(I, s_zAngle.value, H.value);
         memcpy(&copy[start], &I[0], 3*sizeof(float));
     }
@@ -204,7 +204,7 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
         K.shape[0] = 4;
 //        K.shape[1] = 1;
 
-        float L[(int8_t)(s_Ortho.shape[0]*K.shape[1])];
+        float L[4];
         MatMul4x1(L, s_Ortho.value, K.value);
         memcpy(&copy[start], &L[0], 3*sizeof(float));
     }
