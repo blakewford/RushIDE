@@ -99,9 +99,8 @@ void loop()
 {
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
-    arduboy.clear();
 
     selection();
 
-    arduboy.display();
+    arduboy.display(CLEAR_BUFFER);
 }

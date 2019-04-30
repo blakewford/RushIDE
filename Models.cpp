@@ -13,16 +13,9 @@ enum parse_state: int8_t
 
 void MatMul3x1(float* C, const float* A, const float* B)
 {
-    if((A[0] == 0 && A[1] == 0 && A[2] == 0) || (B[0] == 0 && B[1] == 0 && B[2] == 0))
-    {
-        C = {};
-    }
-    else
-    {
-        C[0] = (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]);
-        C[1] = (A[3]*B[0]) + (A[4]*B[1]) + (A[5]*B[2]);
-        C[2] = (A[6]*B[0]) + (A[7]*B[1]) + (A[8]*B[2]);
-    }
+    C[0] = (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]);
+    C[1] = (A[3]*B[0]) + (A[4]*B[1]) + (A[5]*B[2]);
+    C[2] = (A[6]*B[0]) + (A[7]*B[1]) + (A[8]*B[2]);
 }
 
 void MatMul4x1(float* C, const float* A, const float* B)
@@ -33,7 +26,7 @@ void MatMul4x1(float* C, const float* A, const float* B)
     C[3] = (A[12]*B[0]) + (A[13]*B[1]) + (A[14]*B[2]) + (A[15]*B[3]);
 }
 
-void rotationEntry(const int16_t angle, param& parameter, rotation_axis axis)
+void rotationEntry(const int16_t angle, param& parameter, const rotation_axis axis)
 {
     const float radians = (angle%360)*0.0174533;
 
@@ -70,11 +63,11 @@ void rotationEntry(const int16_t angle, param& parameter, rotation_axis axis)
             parameter.value[8] = cosine;
             break;
         case Z:
-            parameter.value[0] = cos(radians);
-            parameter.value[1] = sin(radians);
+            parameter.value[0] = cosine;
+            parameter.value[1] = sine;
 //            parameter.value[2] = 0;
-            parameter.value[3] = -sin(radians);
-            parameter.value[4] = cos(radians);
+            parameter.value[3] = -sine;
+            parameter.value[4] = cosine;
 //            parameter.value[5] = 0;
 //            parameter.value[6] = 0;
 //            parameter.value[7] = 0;
@@ -85,7 +78,7 @@ void rotationEntry(const int16_t angle, param& parameter, rotation_axis axis)
     }
 }
 
-float ortho[4][4] =
+const float ortho[4][4] =
 {
     {1.0f, 0.0f, 0.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
@@ -100,7 +93,7 @@ struct vertex
     float z;
 };
 
-float copy[40];
+float copy[10*sizeof(float)];
 
 param Models::s_Ortho;
 param Models::s_zAngle;
@@ -121,7 +114,23 @@ void Models::begin()
 
     s_Ortho.shape[0] = 4;
     s_Ortho.shape[1] = 4;
-    memcpy(s_Ortho.value, ortho, 16*sizeof(float));
+
+    s_Ortho.value[0] = ortho[0][0];
+//    s_Ortho.value[1] = ortho[0][1];
+//    s_Ortho.value[2] = ortho[0][2];
+//    s_Ortho.value[3] = ortho[0][3];
+//    s_Ortho.value[4] = ortho[1][0];
+    s_Ortho.value[5] = ortho[1][1];
+//    s_Ortho.value[6] = ortho[1][2];
+//    s_Ortho.value[7] = ortho[1][3];
+//    s_Ortho.value[8] = ortho[2][0];
+//    s_Ortho.value[9] = ortho[2][1];
+//    s_Ortho.value[10] = ortho[2][2];
+//    s_Ortho.value[11] = ortho[2][3];
+//    s_Ortho.value[12] = ortho[3][0];
+//    s_Ortho.value[13] = ortho[3][1];
+//    s_Ortho.value[14] = ortho[3][2];
+    s_Ortho.value[15] = ortho[3][3];
 }
 
 void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t color)
@@ -164,7 +173,180 @@ void Models::modifyAngle(const int16_t angle, const rotation_axis axis)
 //        B.shape[1] = 1;
         float C[3];
         MatMul3x1(C, A.value, B.value);
-        memcpy(&copy[start], &C[0], 3*sizeof(float));
+        copy[start]   = C[0];
+        copy[start+1] = C[1];
+        copy[start+2] = C[2];
+    }
+}
+
+namespace std
+{
+    template< class T >
+    void swap(T& A, T& B)
+    {
+        T C = A;
+        A = B;
+        B = C;
+    }
+}
+
+void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, int16_t y3, uint8_t color)
+{
+// Fill a triangle - Bresenham method
+// Original from http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html
+    uint8_t e1,e2;
+    int8_t signx1,signx2,dx1,dy1,dx2,dy2;
+    uint8_t t1x,t2x,y,minx,maxx,t1xp,t2xp;
+
+    bool changed1 = false;
+    bool changed2 = false;
+
+    if(y1>y2) { std::swap(y1,y2); std::swap(x1,x2); }
+    if(y1>y3) { std::swap(y1,y3); std::swap(x1,x3); }
+    if(y2>y3) { std::swap(y2,y3); std::swap(x2,x3); }
+
+    t1x=t2x=x1; y=y1;
+
+    dx1 = (int8_t)(x2 - x1); if(dx1<0) { dx1=-dx1; signx1=-1; } else signx1=1;
+    dy1 = (int8_t)(y2 - y1);
+
+    dx2 = (int8_t)(x3 - x1); if(dx2<0) { dx2=-dx2; signx2=-1; } else signx2=1;
+    dy2 = (int8_t)(y3 - y1);
+
+    if(dy1 > dx1)
+    {
+        std::swap(dx1,dy1);
+        changed1 = true;
+    }
+    if(dy2 > dx2)
+    {
+        std::swap(dy2,dx2);
+        changed2 = true;
+    }
+
+    e2 = (uint8_t)(dx2>>1);
+
+    if(y1 == y2) goto next;
+    e1 = (uint8_t)(dx1>>1);
+
+    for(uint8_t i = 0; i < dx1;)
+    {
+        t1xp=0; t2xp=0;
+        if(t1x<t2x)
+        {
+            minx=t1x; maxx=t2x;
+        }
+        else
+        {
+            minx=t2x;
+            maxx=t1x;
+        }
+
+        while(i<dx1)
+        {
+            i++;
+            e1 += dy1;
+            while (e1 >= dx1)
+            {
+                e1 -= dx1;
+                if(changed1) t1xp=signx1;
+                else goto next1;
+            }
+            if(changed1) break;
+            else t1x += signx1;
+        }
+	next1:
+        while(true)
+        {
+            e2 += dy2;
+            while(e2 >= dx2)
+            {
+                e2 -= dx2;
+                if(changed2) t2xp=signx2;
+                else goto next2;
+            }
+            if(changed2) break;
+            else t2x += signx2;
+        }
+	next2:
+        if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
+        if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
+        arduboy.drawFastHLine(minx, y, maxx-minx, color);
+        if(!changed1) t1x += signx1;
+        t1x+=t1xp;
+        if(!changed2) t2x += signx2;
+        t2x+=t2xp;
+
+        y += 1;
+        if(y == y2) break;
+    }
+    next:
+    dx1 = (int8_t)(x3 - x2); if(dx1<0) { dx1=-dx1; signx1=-1; } else signx1=1;
+    dy1 = (int8_t)(y3 - y2);
+    t1x=x2;
+
+    if(dy1 > dx1)
+    {
+        std::swap(dy1,dx1);
+        changed1 = true;
+    } else changed1=false;
+
+    e1 = (uint8_t)(dx1>>1);
+
+    for(uint8_t i = 0; i<=dx1; i++)
+    {
+        t1xp=0; t2xp=0;
+        if(t1x<t2x)
+        {
+            minx=t1x;
+            maxx=t2x;
+        }
+        else
+        {
+            minx=t2x;
+            maxx=t1x;
+        }
+        while(i<dx1)
+        {
+            e1 += dy1;
+            while (e1 >= dx1)
+            {
+                e1 -= dx1;
+                if(changed1)
+                {
+                    t1xp=signx1; break;
+                }
+                else goto next3;
+            }
+            if(changed1) break;
+            else t1x += signx1;
+            if(i < dx1) i++;
+        }
+	next3:
+        while(t2x != x3)
+        {
+            e2 += dy2;
+            while(e2 >= dx2)
+            {
+                e2 -= dx2;
+                if(changed2) t2xp=signx2;
+                else goto next4;
+            }
+            if(changed2) break;
+            else t2x += signx2;
+        }
+	next4:
+        if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
+        if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
+        arduboy.drawFastHLine(minx, y, maxx-minx, color);
+
+        if(!changed1) t1x += signx1;
+        t1x += t1xp;
+        if(!changed2) t2x += signx2;
+        t2x+=t2xp;
+        y += 1;
+
+        if(y > y3) return;
     }
 }
 
@@ -188,7 +370,9 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
 //        H.shape[1] = 1;
         float I[3];
         MatMul3x1(I, s_zAngle.value, H.value);
-        memcpy(&copy[start], &I[0], 3*sizeof(float));
+        copy[start]   = I[0];
+        copy[start+1] = I[1];
+        copy[start+2] = I[2];
     }
 
     current = 1;
@@ -206,11 +390,13 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
 
         float L[4];
         MatMul4x1(L, s_Ortho.value, K.value);
-        memcpy(&copy[start], &L[0], 3*sizeof(float));
+        copy[start]   = L[0];
+        copy[start+1] = L[1];
+        copy[start+2] = L[2];
     }
 
-    int8_t offsetX = WIDTH/2;
-    int8_t offsetY = HEIGHT/2;
+    const int8_t offsetX = WIDTH/2;
+    const int8_t offsetY = HEIGHT/2;
 
     current = 1;
     count = (int16_t)copy[0];
@@ -226,6 +412,6 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
         int16_t y3 = copy[current++] + offsetY;
         current++;
 
-        arduboy.fillTriangle(x1, y1, x2, y2, x3, y3, color);
+        fillTriangle(x1, y1, x2, y2, x3, y3, color);
     }
 }
