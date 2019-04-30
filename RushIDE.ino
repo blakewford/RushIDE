@@ -13,8 +13,14 @@ const int16_t START_ANGLE = 180;
 int8_t gSelection  = 0;
 int16_t yAngle = START_ANGLE;
 
+//#define TRACE
+
 void setup()
 {
+#ifdef TRACE
+    Serial.begin(9600);
+#endif
+
     arduboy.begin();
     arduboy.setFrameRate(24);
     arduboy.initRandomSeed();
@@ -58,21 +64,7 @@ void selection()
     sprites.drawSelfMasked(leftX, leftY, left, 0);
     sprites.drawSelfMasked(rightX, rightY, right, 0);
 
-    switch(gSelection)
-    {
-        case 0:
-            yAngle+=7;
-            break;
-        case 1:
-            yAngle+=5;
-            break;
-        case 2:
-            yAngle+=4;
-            break;
-        case 3:
-            yAngle+=3;
-            break;
-    }
+    yAngle+=arduboy.cpuLoad()/100;
 
     if(arduboy.justPressed(LEFT_BUTTON))
     {
@@ -103,4 +95,11 @@ void loop()
     selection();
 
     arduboy.display(CLEAR_BUFFER);
+
+#ifdef TRACE
+    if(arduboy.everyXFrames(24))
+    {
+        Serial.println(arduboy.cpuLoad(), DEC);
+    }
+#endif
 }
