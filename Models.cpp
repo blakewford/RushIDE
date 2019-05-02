@@ -19,12 +19,19 @@ void MatMul3x1(float* C, const float* A, const float* B)
     C[2] = (A[6]*B[0]) + (A[7]*B[1]) + (A[8]*B[2]);
 }
 
-void MatMul4x1(float* C, const float* A, const float* B)
+void MatMul3x1Sparse(float* C, const float* A, const float* B)
 {
-    C[0] = (A[0]*B[0]) + (A[1]*B[1]) + (A[2]*B[2]) + (A[3]*B[3]);
-    C[1] = (A[4]*B[0]) + (A[5]*B[1]) + (A[6]*B[2]) + (A[7]*B[3]);
-    C[2] = (A[8]*B[0]) + (A[9]*B[1]) + (A[10]*B[2]) + (A[11]*B[3]);
-    C[3] = (A[12]*B[0]) + (A[13]*B[1]) + (A[14]*B[2]) + (A[15]*B[3]);
+    C[0] = (A[0]*B[0]);
+    C[1] = (A[4]*B[1]);
+    C[2] = (A[8]*B[2]);
+}
+
+void MatMul4x1Sparse(float* C, const float* A, const float* B)
+{
+    C[0] = (A[0]*B[0]);
+    C[1] = (A[5]*B[1]);
+    C[2] = 0;
+    C[3] = (A[15]*B[3]);
 }
 
 void rotationEntry(const int16_t angle, param& parameter, const rotation_axis axis)
@@ -393,7 +400,7 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
 //        H.shape[0] = 3;
 //        H.shape[1] = 1;
         float I[3];
-        MatMul3x1(I, s_zAngle.value, H.value);
+        MatMul3x1Sparse(I, s_zAngle.value, H.value);
         copy[start]   = I[0];
         copy[start+1] = I[1];
         copy[start+2] = I[2];
@@ -413,7 +420,7 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
 //        K.shape[1] = 1;
 
         float L[4];
-        MatMul4x1(L, s_Ortho.value, K.value);
+        MatMul4x1Sparse(L, s_Ortho.value, K.value);
         copy[start]   = L[0];
         copy[start+1] = L[1];
         copy[start+2] = L[2];
