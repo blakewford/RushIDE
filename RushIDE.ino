@@ -8,9 +8,12 @@ Models models;
 Sprites sprites;
 Arduboy2Base arduboy;
 
+const int8_t TOTAL_SCENES = 2;
 const int16_t START_ANGLE = 180;
 
 int8_t gSelection  = 0;
+int8_t gScene = 0;
+
 int16_t yAngle = START_ANGLE;
 uint8_t xPosition = 32;
 uint8_t yPosition = 48;
@@ -136,13 +139,45 @@ void tunnel()
 
 }
 
+void checkScene()
+{
+    if(arduboy.justPressed(A_BUTTON))
+    {
+        gScene--;
+    }
+
+    if(arduboy.justPressed(B_BUTTON))
+    {
+        gScene++;
+    }
+
+    if(gScene <= 0)
+    {
+        gScene = 0;
+    }
+
+    if(gScene >= TOTAL_SCENES)
+    {
+        gScene = TOTAL_SCENES-1;
+    }
+}
+
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
 
-    selection();
+    switch(gScene)
+    {
+        case 0:
+            selection();
+            break;
+        case 1:
+            tunnel();
+            break;
+    }
 
+    checkScene();
     arduboy.display(CLEAR_BUFFER);
 
 #ifdef TRACE
