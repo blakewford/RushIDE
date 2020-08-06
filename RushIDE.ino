@@ -12,6 +12,8 @@ const int16_t START_ANGLE = 180;
 
 int8_t gSelection  = 0;
 int16_t yAngle = START_ANGLE;
+uint8_t xPosition = 32;
+uint8_t yPosition = 48;
 
 //#define TRACE
 
