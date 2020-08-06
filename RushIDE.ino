@@ -87,6 +87,53 @@ void selection()
     }
 }
 
+void tunnel()
+{
+    float* modelMap = ndxToValueCar;
+    uint8_t* vehicle = car;
+    uint8_t* name = overland;
+
+    models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
+    sprites.drawSelfMasked(43, 56, name, 0);
+
+    yAngle = 300;
+    uint8_t flex = 0;
+    if(xPosition > 48 && xPosition < 80)
+    {
+        flex += random() % 16;
+    }
+
+    if(xPosition % 2 == 0)
+    {
+        yAngle += flex;
+        yPosition--;
+    }
+    else
+    {
+        yAngle -= flex;
+    }
+
+    uint8_t count = 4;
+    while(count--)
+    {
+        uint8_t modify = random() % 8;
+        arduboy.drawPixel(xPosition, yPosition + modify, 1);
+        int tails = 4;
+        while(tails--)
+        {
+            arduboy.drawPixel(xPosition - tails, yPosition + modify + tails, 1);
+        }
+    }
+
+    xPosition++;
+    if(xPosition >= 96)
+    {
+        xPosition = 32;
+        yPosition = 48;
+    }
+
+}
+
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
