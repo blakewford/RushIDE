@@ -8,7 +8,7 @@ Models models;
 Sprites sprites;
 Arduboy2Base arduboy;
 
-const int8_t TOTAL_SCENES = 2;
+const int8_t TOTAL_SCENES = 3;
 const int16_t START_ANGLE = 180;
 
 int8_t gSelection  = 0;
@@ -92,6 +92,35 @@ void selection()
     }
 }
 
+void calculateResistance()
+{
+    float* modelMap = ndxToValueCar;
+    uint8_t* vehicle = car;
+    uint8_t* name = overland;
+
+    models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
+
+    const int STARTX = 0;
+    const int STARTY = 0;
+
+    int i = 0;
+    const int32_t length = 32;
+    uint8_t flow[16] = {0};
+
+    int8_t count = 16;
+    while(count--)
+    {
+        flow[count] = STARTY + count;
+    }
+    while(i < length)
+    {
+        uint8_t pixel = arduboy.getPixel(STARTX + i, STARTY);
+        i++;
+    }
+
+    gScene++;
+}
+
 void tunnel()
 {
     float* modelMap = ndxToValueCar;
@@ -144,6 +173,10 @@ void checkScene()
     if(arduboy.justPressed(A_BUTTON))
     {
         gScene--;
+        if(gScene == 1) // Render math scene
+        {
+            gScene--;
+        }
     }
 
     if(arduboy.justPressed(B_BUTTON))
@@ -173,6 +206,11 @@ void loop()
             selection();
             break;
         case 1:
+            calculateResistance();
+            arduboy.clear();
+            tunnel();
+            break;
+        case 2:
             tunnel();
             break;
     }
