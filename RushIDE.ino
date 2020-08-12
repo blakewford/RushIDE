@@ -92,6 +92,37 @@ void selection()
     }
 }
 
+int singlePass(int y, uint8_t* pattern)
+{
+    int score = 0;
+    const int STARTX = 48;
+
+    int i = 0;
+    int x = STARTX;
+    const int32_t length = 32;
+    while(i < length)
+    {
+        uint8_t pixel = arduboy.getPixel(x, y);
+        if(pixel !=0/*WHITE*/) // Hit
+        {
+            score++;
+            y--;
+        }
+        else
+        {
+            y++;
+        }
+        if(pattern != nullptr)
+        {
+            pattern[i] = y;
+        }
+        x++;
+        i++;
+    }
+
+    return score;
+}
+
 int calculateResistance(uint8_t* pattern)
 {
     int score = 0;
@@ -99,6 +130,8 @@ int calculateResistance(uint8_t* pattern)
     float* modelMap = nullptr;
     uint8_t* vehicle = nullptr;
     uint8_t* name = nullptr;
+
+    int multiplier = 16;
     switch(gSelection)
     {
         case 0:
@@ -120,37 +153,28 @@ int calculateResistance(uint8_t* pattern)
              modelMap = ndxToValueBike;
             vehicle = bike;
             name = moto;
+            multiplier = 6;
             break;
     }
 
     models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
 
-    const int STARTX = 48;
     const int STARTY = 32;
-
-    int i = 0;
-    int x = STARTX;
     int y = STARTY;
-    const int32_t length = 32;
-    while(i < length)
-    {
-        uint8_t pixel = arduboy.getPixel(x, y);
-        if(pixel !=0/*WHITE*/) // Hit
-        {
-            y--;
-        }
-        else
-        {
-            y++;
-        }
-        pattern[i] = y;
-        x++;
-        i++;
-    }
 
+    singlePass(y, pattern);
+    y = STARTY - 8;
+    while(y < STARTY + 8)
+    {
+        if(y != STARTY) // Save a recalcuation
+        {
+            score += singlePass(y, nullptr);
+        }
+        y++;
+    }
     gScene++;
 
-    return score; // TODO calculate a score
+    return score*multiplier;
 }
 
 void tunnel(uint8_t* pattern)
@@ -272,13 +296,14 @@ void loop()
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
 
+    int score = 0;
     switch(gScene)
     {
         case 0:
             selection();
             break;
         case 1:
-            calculateResistance(pattern);
+            score = calculateResistance(pattern);
             arduboy.clear();
             tunnel(pattern);
             break;
