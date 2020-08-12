@@ -92,70 +92,142 @@ void selection()
     }
 }
 
-void calculateResistance()
+int calculateResistance(uint8_t* pattern)
 {
-    float* modelMap = ndxToValueCar;
-    uint8_t* vehicle = car;
-    uint8_t* name = overland;
+    int score = 0;
+
+    float* modelMap = nullptr;
+    uint8_t* vehicle = nullptr;
+    uint8_t* name = nullptr;
+    switch(gSelection)
+    {
+        case 0:
+            modelMap = ndxToValueCar;
+            vehicle = car;
+            name = overland;
+            break;
+        case 1:
+            modelMap = ndxToValueTruck;
+            vehicle = truck;
+            name = baja;
+            break;
+        case 2:
+            modelMap = ndxToValueBus;
+            vehicle = bus;
+            name = burningman;
+            break;
+        case 3:
+             modelMap = ndxToValueBike;
+            vehicle = bike;
+            name = moto;
+            break;
+    }
 
     models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
 
-    const int STARTX = 0;
-    const int STARTY = 0;
+    const int STARTX = 48;
+    const int STARTY = 32;
 
     int i = 0;
+    int x = STARTX;
+    int y = STARTY;
     const int32_t length = 32;
-    uint8_t flow[16] = {0};
-
-    int8_t count = 16;
-    while(count--)
-    {
-        flow[count] = STARTY + count;
-    }
     while(i < length)
     {
-        uint8_t pixel = arduboy.getPixel(STARTX + i, STARTY);
+        uint8_t pixel = arduboy.getPixel(x, y);
+        if(pixel !=0/*WHITE*/) // Hit
+        {
+            y--;
+        }
+        else
+        {
+            y++;
+        }
+        pattern[i] = y;
+        x++;
         i++;
     }
 
     gScene++;
+
+    return score; // TODO calculate a score
 }
 
-void tunnel()
+void tunnel(uint8_t* pattern)
 {
-    float* modelMap = ndxToValueCar;
-    uint8_t* vehicle = car;
-    uint8_t* name = overland;
+    float* modelMap = nullptr;
+    uint8_t* vehicle = nullptr;
+    uint8_t* name = nullptr;
+    switch(gSelection)
+    {
+        case 0:
+            modelMap = ndxToValueCar;
+            vehicle = car;
+            name = overland;
+            break;
+        case 1:
+            modelMap = ndxToValueTruck;
+            vehicle = truck;
+            name = baja;
+            break;
+        case 2:
+            modelMap = ndxToValueBus;
+            vehicle = bus;
+            name = burningman;
+            break;
+        case 3:
+             modelMap = ndxToValueBike;
+            vehicle = bike;
+            name = moto;
+            break;
+    }
 
     models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
     sprites.drawSelfMasked(43, 56, name, 0);
 
     yAngle = 300;
     uint8_t flex = 0;
+    bool resistanceZone = false;
     if(xPosition > 48 && xPosition < 80)
     {
         flex += random() % 16;
+        resistanceZone = true;
     }
 
     if(xPosition % 2 == 0)
     {
         yAngle += flex;
         yPosition--;
+
     }
     else
     {
         yAngle -= flex;
     }
 
-    uint8_t count = 4;
-    while(count--)
+    if(resistanceZone)
     {
-        uint8_t modify = random() % 8;
-        arduboy.drawPixel(xPosition, yPosition + modify, 1);
-        int tails = 4;
-        while(tails--)
+        int i = 0;
+        const int32_t length = 32;
+        while(i < length)
         {
-            arduboy.drawPixel(xPosition - tails, yPosition + modify + tails, 1);
+            uint8_t modify = random() % 3;
+            arduboy.drawPixel(48 + i, pattern[i] - 6 + modify);
+            i++;
+        }
+    }
+    else
+    {
+        uint8_t count = 4;
+        while(count--)
+        {
+            uint8_t modify = random() % 8;
+            arduboy.drawPixel(xPosition, yPosition + modify, 1);
+            int tails = 4;
+            while(tails--)
+            {
+                arduboy.drawPixel(xPosition - tails, yPosition + modify + tails, 1);
+            }
         }
     }
 
@@ -165,7 +237,6 @@ void tunnel()
         xPosition = 32;
         yPosition = 48;
     }
-
 }
 
 void checkScene()
@@ -195,6 +266,7 @@ void checkScene()
     }
 }
 
+uint8_t pattern[32];
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
@@ -206,12 +278,12 @@ void loop()
             selection();
             break;
         case 1:
-            calculateResistance();
+            calculateResistance(pattern);
             arduboy.clear();
-            tunnel();
+            tunnel(pattern);
             break;
         case 2:
-            tunnel();
+            tunnel(pattern);
             break;
     }
 
