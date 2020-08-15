@@ -123,7 +123,7 @@ int singlePass(int y, uint8_t* pattern)
     return score;
 }
 
-int renderModelProfile()
+void renderModelProfile()
 {
     float* modelMap = nullptr;
     uint8_t* vehicle = nullptr;
@@ -156,8 +156,6 @@ int renderModelProfile()
     }
 
     models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
-
-    return multiplier;
 }
 
 int calculateResistance(uint8_t* pattern)
@@ -178,14 +176,38 @@ int calculateResistance(uint8_t* pattern)
         y++;
     }
 
-    return score;
+    int multiplier = 16;
+    switch(gSelection)
+    {
+        case 3:
+            multiplier = 6;
+            break;
+    }
+
+    return score*multiplier;
 }
 
 uint8_t pointerX = 0;
+int8_t findPixel()
+{
+    uint8_t y = 1;
+    uint8_t value = 0;
+    while(value == 0 && y < 64)
+    {
+        y++;
+        value = arduboy.getPixel(pointerX, y);
+    }
+
+    if(value) return y;
+
+    return -1;
+}
+
 void modify()
 {
     if(arduboy.justPressed(LEFT_BUTTON))
     {
+        arduboy.drawPixel(pointerX, 0, 0);
         if (pointerX > 0)
             pointerX--;
         else
@@ -194,6 +216,7 @@ void modify()
 
     if(arduboy.justPressed(RIGHT_BUTTON))
     {
+        arduboy.drawPixel(pointerX, 0, 0);
         if (pointerX < 127)
             pointerX++;
         else
@@ -201,6 +224,24 @@ void modify()
     }
 
     arduboy.drawPixel(pointerX, 0, 1);
+
+    int8_t y = findPixel();
+    if(arduboy.justPressed(UP_BUTTON) && y != -1)
+    {
+        if(y > 2)
+        {
+            y--;
+            arduboy.drawPixel(pointerX, y, 1);
+        }
+    }
+
+    if(arduboy.justPressed(DOWN_BUTTON) && y != -1)
+    {
+        if(arduboy.getPixel(pointerX, y+1))
+        {
+            arduboy.drawPixel(pointerX, y, 0);
+        }
+    }
 }
 
 void tunnel(uint8_t* pattern)
@@ -291,6 +332,7 @@ void tunnel(uint8_t* pattern)
 
 void checkScene()
 {
+    int8_t previous = gScene;
     if(arduboy.justPressed(A_BUTTON))
     {
         gScene--;
@@ -310,16 +352,43 @@ void checkScene()
     {
         gScene = TOTAL_SCENES-1;
     }
+
+    if(previous != gScene && gScene == 1)
+    {
+        arduboy.clear();
+        renderModelProfile();
+    }
 }
 
+void drawScore(int score)
+{
+    const int16_t x = 128;
+    const int16_t y = 44;
+
+    char buffer[6];
+    ltoa(score, buffer, 10);
+
+    const uint8_t zero = '0';
+    uint8_t count = sizeof(buffer)-1;
+    uint8_t offset = 5;
+    while(count--)
+    {
+        uint8_t value = buffer[count];
+        if (value >= '0' && value <= '9')
+        {
+            sprites.drawSelfMasked(x - offset, y, numbers, value - zero);
+        }
+        offset +=5;
+    }
+}
+
+int gScore = 0;
 uint8_t pattern[32];
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
 
-    int score = 0;
-    int multiplier = 1;
     switch(gScene)
     {
         case 0:
@@ -327,17 +396,24 @@ void loop()
             pointerX = 0;
             break;
         case 1:
-            multiplier = renderModelProfile();
-            score = calculateResistance(pattern);
+            gScore = calculateResistance(pattern);
             modify();
             break;
         case 2:
             tunnel(pattern);
+            drawScore(gScore);
             break;
     }
 
     checkScene();
-    arduboy.display(CLEAR_BUFFER);
+    if(gScene != 1)
+    {
+        arduboy.display(CLEAR_BUFFER);
+    }
+    else
+    {
+        arduboy.display(false);
+    }
 
 #ifdef TRACE
     if(arduboy.everyXFrames(24))
