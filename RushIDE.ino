@@ -123,10 +123,8 @@ int singlePass(int y, uint8_t* pattern)
     return score;
 }
 
-int calculateResistance(uint8_t* pattern)
+int renderModelProfile()
 {
-    int score = 0;
-
     float* modelMap = nullptr;
     uint8_t* vehicle = nullptr;
     uint8_t* name = nullptr;
@@ -159,6 +157,13 @@ int calculateResistance(uint8_t* pattern)
 
     models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
 
+    return multiplier;
+}
+
+int calculateResistance(uint8_t* pattern)
+{
+    int score = 0;
+
     const int STARTY = 32;
     int y = STARTY;
 
@@ -172,9 +177,30 @@ int calculateResistance(uint8_t* pattern)
         }
         y++;
     }
-    gScene++;
 
-    return score*multiplier;
+    return score;
+}
+
+uint8_t pointerX = 0;
+void modify()
+{
+    if(arduboy.justPressed(LEFT_BUTTON))
+    {
+        if (pointerX > 0)
+            pointerX--;
+        else
+            pointerX = 0;
+    }
+
+    if(arduboy.justPressed(RIGHT_BUTTON))
+    {
+        if (pointerX < 127)
+            pointerX++;
+        else
+            pointerX = 127;
+    }
+
+    arduboy.drawPixel(pointerX, 0, 1);
 }
 
 void tunnel(uint8_t* pattern)
@@ -268,10 +294,6 @@ void checkScene()
     if(arduboy.justPressed(A_BUTTON))
     {
         gScene--;
-        if(gScene == 1) // Render math scene
-        {
-            gScene--;
-        }
     }
 
     if(arduboy.justPressed(B_BUTTON))
@@ -297,15 +319,17 @@ void loop()
     arduboy.pollButtons();
 
     int score = 0;
+    int multiplier = 1;
     switch(gScene)
     {
         case 0:
             selection();
+            pointerX = 0;
             break;
         case 1:
+            multiplier = renderModelProfile();
             score = calculateResistance(pattern);
-            arduboy.clear();
-            tunnel(pattern);
+            modify();
             break;
         case 2:
             tunnel(pattern);
