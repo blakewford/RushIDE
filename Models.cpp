@@ -146,14 +146,7 @@ void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t
     int16_t count = (int16_t)map[0];
     count*=3;
 
-#define DOUBLE_DOWN
-
-#ifdef DOUBLE_DOWN
-    assert(count%6 == 0);
-    copy[0] = 6;
-#else
     copy[0] = 3;
-#endif
 
     int16_t ndx = 0;
     while(ndx < count)
@@ -167,23 +160,8 @@ void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t
         copy[7] = map[pgm_read_byte(&model[ndx+6])];
         copy[8] = map[pgm_read_byte(&model[ndx+7])];
         copy[9] = map[pgm_read_byte(&model[ndx+8])];
-#ifdef DOUBLE_DOWN
-        copy[10] = map[pgm_read_byte(&model[ndx+9])];
-        copy[11] = map[pgm_read_byte(&model[ndx+10])];
-        copy[12] = map[pgm_read_byte(&model[ndx+11])];
-        copy[13] = map[pgm_read_byte(&model[ndx+12])];
-        copy[14] = map[pgm_read_byte(&model[ndx+13])];
-        copy[15] = map[pgm_read_byte(&model[ndx+14])];
-        copy[16] = map[pgm_read_byte(&model[ndx+15])];
-        copy[17] = map[pgm_read_byte(&model[ndx+16])];
-        copy[18] = map[pgm_read_byte(&model[ndx+17])];
-#endif
         drawModel(xAngle, yAngle, zAngle, color);
-#ifdef DOUBLE_DOWN
-        ndx+=18;
-#else
         ndx+=9;
-#endif
     }
 }
 
