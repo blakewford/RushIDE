@@ -34,6 +34,8 @@ void MatMul4x1Sparse(float* C, const float* A, const float* B)
     C[3] = (A[15]*B[3]);
 }
 
+param X_AT_15_DEGREES;
+
 void rotationEntry(const int16_t angle, param& parameter, const rotation_axis axis)
 {
     const float radians = (angle%360)*0.0174533;
@@ -122,7 +124,6 @@ void Models::begin()
 
     s_Ortho.shape[0] = 4;
     s_Ortho.shape[1] = 4;
-
     s_Ortho.value[0] = ortho[0][0];
 //    s_Ortho.value[1] = ortho[0][1];
 //    s_Ortho.value[2] = ortho[0][2];
@@ -139,6 +140,18 @@ void Models::begin()
 //    s_Ortho.value[13] = ortho[3][1];
 //    s_Ortho.value[14] = ortho[3][2];
     s_Ortho.value[15] = ortho[3][3];
+
+    X_AT_15_DEGREES.value[0] = 1;
+//    X_AT_15_DEGREES.value[1] = 0;
+//    X_AT_15_DEGREES.value[2] = 0;
+//    X_AT_15_DEGREES.value[3] = 0;
+    X_AT_15_DEGREES.value[4] = 0.965925813;
+    X_AT_15_DEGREES.value[5] = 0.258819163;
+    X_AT_15_DEGREES.value[6] = -0.258819163;
+    X_AT_15_DEGREES.value[7] = 0.965925813;
+//    X_AT_15_DEGREES.value[8] = 0;
+//    X_AT_15_DEGREES.shape[0] = 3;
+    X_AT_15_DEGREES.shape[1] = 3;
 }
 
 void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t color)
@@ -264,7 +277,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
             if(changed1) break;
             else t1x += signx1;
         }
-	next1:
+  next1:
         while(true)
         {
             e2 += dy2;
@@ -277,7 +290,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
             if(changed2) break;
             else t2x += signx2;
         }
-	next2:
+  next2:
         if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
         if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
         arduboy.drawFastHLine(minx, y, maxx-minx, color);
@@ -331,7 +344,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
             else t1x += signx1;
             if(i < dx1) i++;
         }
-	next3:
+  next3:
         while(t2x != x3)
         {
             e2 += dy2;
@@ -344,7 +357,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
             if(changed2) break;
             else t2x += signx2;
         }
-	next4:
+  next4:
         if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
         if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
         arduboy.drawFastHLine(minx, y, maxx-minx, color);
@@ -359,11 +372,32 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
     }
 }
 
+void Models::modifyXAngle()
+{
+    param B;
+    int16_t current = 1;
+    int16_t count = (int16_t)copy[0];
+    while(count--)
+    {
+        int16_t start = current;
+        B.value[2] = copy[current++];
+        B.value[1] = copy[current++];
+        B.value[0] = copy[current++];
+//        B.shape[0] = 3;
+//        B.shape[1] = 1;
+        float C[3];
+        MatMul3x1(C, X_AT_15_DEGREES.value, B.value);
+        copy[start]   = C[0];
+        copy[start+1] = C[1];
+        copy[start+2] = C[2];
+    }
+}
+
 void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t color)
 {
 
     modifyAngle(yAngle, Y);
-    modifyAngle(xAngle, X);
+    modifyXAngle();
 //    modifyAngle(zAngle, Z);
 
     param H;
