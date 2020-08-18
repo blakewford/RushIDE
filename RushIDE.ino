@@ -110,14 +110,14 @@ int singlePass(int y, uint8_t* pattern)
         }
         else
         {
+            x++;
             y++;
+            if(pattern != nullptr)
+            {
+                pattern[i] = y;
+            }
+            i++;
         }
-        if(pattern != nullptr)
-        {
-            pattern[i] = y;
-        }
-        x++;
-        i++;
     }
 
     return score;
@@ -205,7 +205,7 @@ int8_t findPixel()
 
 void modify()
 {
-    if(arduboy.justPressed(LEFT_BUTTON))
+    if(arduboy.pressed(LEFT_BUTTON))
     {
         arduboy.drawPixel(pointerX, 0, 0);
         if (pointerX > 0)
@@ -214,7 +214,7 @@ void modify()
             pointerX = 0;
     }
 
-    if(arduboy.justPressed(RIGHT_BUTTON))
+    if(arduboy.pressed(RIGHT_BUTTON))
     {
         arduboy.drawPixel(pointerX, 0, 0);
         if (pointerX < 127)
@@ -226,7 +226,7 @@ void modify()
     arduboy.drawPixel(pointerX, 0, 1);
 
     int8_t y = findPixel();
-    if(arduboy.justPressed(UP_BUTTON) && y != -1)
+    if(arduboy.pressed(UP_BUTTON) && y != -1)
     {
         if(y > 2)
         {
@@ -235,7 +235,7 @@ void modify()
         }
     }
 
-    if(arduboy.justPressed(DOWN_BUTTON) && y != -1)
+    if(arduboy.pressed(DOWN_BUTTON) && y != -1)
     {
         if(arduboy.getPixel(pointerX, y+1))
         {
