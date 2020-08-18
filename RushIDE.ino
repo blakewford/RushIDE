@@ -26,7 +26,7 @@ void setup()
     Serial.begin(9600);
 #endif
 
-    arduboy.begin();
+    arduboy.boot();
     arduboy.setFrameRate(24);
     arduboy.initRandomSeed();
 

@@ -101,7 +101,7 @@ struct vertex
     float z;
 };
 
-float copy[19*sizeof(float)];
+float copy[10*sizeof(float)];
 
 param Models::s_Ortho;
 param Models::s_zAngle;
