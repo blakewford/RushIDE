@@ -16,7 +16,7 @@ int8_t gScene = 0;
 
 int16_t yAngle = START_ANGLE;
 uint8_t xPosition = 32;
-uint8_t yPosition = 48;
+uint8_t yPosition = 40;
 
 //#define TRACE
 
@@ -288,8 +288,14 @@ void tunnel(uint8_t* pattern)
     if(xPosition % 2 == 0)
     {
         yAngle += flex;
-        yPosition--;
-
+        if(flex == 0)
+        {
+            yPosition--;
+        }
+        else
+        {
+            yPosition = 28;
+        }
     }
     else
     {
@@ -304,7 +310,7 @@ void tunnel(uint8_t* pattern)
         {
             uint8_t modify = random() % 3;
             arduboy.drawPixel(48 + i, pattern[i] - 6 + modify);
-            i++;
+            i+=2;
         }
     }
     else
@@ -314,11 +320,6 @@ void tunnel(uint8_t* pattern)
         {
             uint8_t modify = random() % 8;
             arduboy.drawPixel(xPosition, yPosition + modify, 1);
-            int tails = 4;
-            while(tails--)
-            {
-                arduboy.drawPixel(xPosition - tails, yPosition + modify + tails, 1);
-            }
         }
     }
 
@@ -326,7 +327,7 @@ void tunnel(uint8_t* pattern)
     if(xPosition >= 96)
     {
         xPosition = 32;
-        yPosition = 48;
+        yPosition = 40;
     }
 }
 
