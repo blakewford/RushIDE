@@ -193,7 +193,7 @@ int calculateResistance(uint8_t* pattern)
     return score*multiplier;
 }
 
-uint8_t pointerX = 0;
+uint8_t pointerX = 32;
 int8_t findPixel()
 {
     uint8_t y = 1;
@@ -214,19 +214,19 @@ void modify()
     if(arduboy.pressed(LEFT_BUTTON))
     {
         arduboy.drawPixel(pointerX, 0, 0);
-        if (pointerX > 0)
+        if (pointerX > 32)
             pointerX--;
         else
-            pointerX = 0;
+            pointerX = 32;
     }
 
     if(arduboy.pressed(RIGHT_BUTTON))
     {
         arduboy.drawPixel(pointerX, 0, 0);
-        if (pointerX < 127)
+        if (pointerX < 96)
             pointerX++;
         else
-            pointerX = 127;
+            pointerX = 96;
     }
 
     arduboy.drawPixel(pointerX, 0, 1);
@@ -448,7 +448,7 @@ void loop()
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
 
-    if(arduboy.everyXFrames(~0))
+    if(arduboy.everyXFrames(96))
     {
         gToggle = !gToggle;
     }
@@ -457,11 +457,10 @@ void loop()
     {
         case 0:
             splash();
-            pointerX = 0;
             break;
         case 1:
             selection();
-            pointerX = 0;
+            pointerX = 32;
             break;
         case 2:
             gScore = calculateResistance(pattern);
