@@ -8,7 +8,8 @@ Models models;
 Sprites sprites;
 Arduboy2Base arduboy;
 
-const int8_t TOTAL_SCENES = 3;
+const int8_t TOTAL_SCENES = 4;
+const int8_t SKIP_DRAW_SCENE = 2;
 const int16_t START_ANGLE = 180;
 
 int8_t gSelection  = 0;
@@ -41,6 +42,11 @@ void drawElements(const uint8_t* vehicle, const float* modelMap, const uint8_t* 
     const int16_t x = 43;
     const int16_t y = 56;   
     sprites.drawSelfMasked(x, y, name, 0); 
+}
+
+void splash()
+{
+    sprites.drawSelfMasked(32, 20, logo, 0);
 }
 
 void selection()
@@ -274,7 +280,6 @@ void tunnel(uint8_t* pattern)
     }
 
     models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
-    sprites.drawSelfMasked(43, 56, name, 0);
 
     yAngle = 300;
     uint8_t flex = 0;
@@ -331,6 +336,58 @@ void tunnel(uint8_t* pattern)
     }
 }
 
+const int8_t xRoadPositionReset = 30;
+int8_t xRoadPosition = xRoadPositionReset;
+void road()
+{
+    float* modelMap = nullptr;
+    uint8_t* vehicle = nullptr;
+    uint8_t* name = nullptr;
+    switch(gSelection)
+    {
+        case 0:
+            modelMap = ndxToValueCar;
+            vehicle = car;
+            name = overland;
+            break;
+        case 1:
+            modelMap = ndxToValueTruck;
+            vehicle = truck;
+            name = baja;
+            break;
+        case 2:
+            modelMap = ndxToValueBus;
+            vehicle = bus;
+            name = burningman;
+            break;
+        case 3:
+             modelMap = ndxToValueBike;
+            vehicle = bike;
+            name = moto;
+            break;
+    }
+
+    yAngle = 215;
+    yAngle += random() % 4;
+
+    models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
+    arduboy.drawLine(10, 0, 74, 63, 1);
+    arduboy.drawLine(45, 0, 109, 63, 1);
+
+    int8_t x = xRoadPosition;
+    int8_t y = xRoadPosition - xRoadPositionReset;
+    arduboy.drawLine(x, y, x+1, y+1, 1);
+    for(int i = 0; i < 6; i++)
+    {
+        x+=10;
+        y+=10;
+        arduboy.drawLine(x, y, x+1, y+1, 1);
+    }
+    xRoadPosition++;
+
+    if(y == 63) xRoadPosition = xRoadPositionReset;
+}
+
 void checkScene()
 {
     int8_t previous = gScene;
@@ -354,7 +411,7 @@ void checkScene()
         gScene = TOTAL_SCENES-1;
     }
 
-    if(previous != gScene && gScene == 1)
+    if(previous != gScene && gScene == SKIP_DRAW_SCENE)
     {
         arduboy.clear();
         renderModelProfile();
@@ -364,7 +421,7 @@ void checkScene()
 void drawScore(int score)
 {
     const int16_t x = 128;
-    const int16_t y = 44;
+    const int16_t y = 32;
 
     char buffer[6];
     ltoa(score, buffer, 10);
@@ -384,30 +441,47 @@ void drawScore(int score)
 }
 
 int gScore = 0;
+bool gToggle = false;
 uint8_t pattern[32];
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
     arduboy.pollButtons();
 
+    if(arduboy.everyXFrames(~0))
+    {
+        gToggle = !gToggle;
+    }
+
     switch(gScene)
     {
         case 0:
-            selection();
+            splash();
             pointerX = 0;
             break;
         case 1:
+            selection();
+            pointerX = 0;
+            break;
+        case 2:
             gScore = calculateResistance(pattern);
             modify();
             break;
-        case 2:
-            tunnel(pattern);
+        case 3:
+            if(gToggle)
+            {
+                tunnel(pattern);
+            }
+            else
+            {
+                road();
+            }
             drawScore(gScore);
             break;
     }
 
     checkScene();
-    if(gScene != 1)
+    if(gScene != SKIP_DRAW_SCENE)
     {
         arduboy.display(CLEAR_BUFFER);
     }
