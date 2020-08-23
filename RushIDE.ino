@@ -578,7 +578,9 @@ void loop()
             {
                 road();
             }
-            drawScore(gRatio, 16);
+            sprites.drawSelfMasked(96, 5, label, 0);
+            sprites.drawSelfMasked(96, 22, wind, 0);
+            drawScore(gRatio, 15);
             drawScore(gScore, 32);
             break;
     }
