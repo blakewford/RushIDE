@@ -38,7 +38,7 @@ void setup()
 void drawElements(const uint8_t* vehicle, const float* modelMap, const uint8_t* name)
 {
     const int16_t xAngle = 15;
-    models.drawCompressedModel(vehicle, modelMap, xAngle, yAngle, 0, 1);
+    models.drawCompressedModel(vehicle, modelMap, nullptr, xAngle, yAngle, 0);
 
     const int16_t x = 43;
     const int16_t y = 56;   
@@ -195,7 +195,7 @@ void renderModelProfile()
             break;
     }
 
-    models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
+    models.drawCompressedModel(vehicle, modelMap, nullptr, 0, 270, 0);
 }
 
 int calculateWeight()
@@ -364,7 +364,7 @@ void tunnel(uint8_t* pattern)
             break;
     }
 
-    models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
+    models.drawCompressedModel(vehicle, modelMap, nullptr, 15, yAngle, 0);
 
     yAngle = 300;
     uint8_t flex = 0;
@@ -455,7 +455,7 @@ void road()
     yAngle = 215;
     yAngle += random() % 4;
 
-    models.drawCompressedModel(vehicle, modelMap, 15, yAngle, 0, 1);
+    models.drawCompressedModel(vehicle, modelMap, nullptr, 15, yAngle, 0);
     arduboy.drawLine(10, 0, 74, 63, 1);
     arduboy.drawLine(45, 0, 109, 63, 1);
 

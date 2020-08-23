@@ -154,7 +154,7 @@ void Models::begin()
     X_AT_15_DEGREES.shape[1] = 3;
 }
 
-void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t color)
+void Models::drawCompressedModel(const uint8_t* model, const float* map, const uint8_t* fill, int16_t xAngle, int16_t yAngle, int16_t zAngle)
 {
     int16_t count = (int16_t)map[0];
     count*=3;
@@ -173,7 +173,7 @@ void Models::drawCompressedModel(const uint8_t* model, const float* map, int16_t
         copy[7] = map[pgm_read_byte(&model[ndx+6])];
         copy[8] = map[pgm_read_byte(&model[ndx+7])];
         copy[9] = map[pgm_read_byte(&model[ndx+8])];
-        drawModel(xAngle, yAngle, zAngle, color);
+        drawModel(xAngle, yAngle, zAngle, fill);
         ndx+=9;
     }
 }
@@ -210,6 +210,15 @@ namespace std
         A = B;
         B = C;
     }
+}
+
+uint8_t getColor(uint8_t color)
+{
+    if(color == 0) return 0;
+    if(color == 1) return 1;
+
+    int fill = random() % color;
+    return fill != 0;
 }
 
 void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, int16_t y3, uint8_t color)
@@ -293,7 +302,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
   next2:
         if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
         if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
-        arduboy.drawFastHLine(minx, y, maxx-minx, color);
+        arduboy.drawFastHLine(minx, y, maxx-minx, getColor(color));
         if(!changed1) t1x += signx1;
         t1x+=t1xp;
         if(!changed2) t2x += signx2;
@@ -360,7 +369,7 @@ void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, in
   next4:
         if(minx>t1x) minx=t1x; if(minx>t2x) minx=t2x;
         if(maxx<t1x) maxx=t1x; if(maxx<t2x) maxx=t2x;
-        arduboy.drawFastHLine(minx, y, maxx-minx, color);
+        arduboy.drawFastHLine(minx, y, maxx-minx, getColor(color));
 
         if(!changed1) t1x += signx1;
         t1x += t1xp;
@@ -393,7 +402,7 @@ void Models::modifyXAngle()
     }
 }
 
-void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t color)
+void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, const uint8_t* fill)
 {
 
     modifyAngle(yAngle, Y);
@@ -443,6 +452,7 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
 
     current = 1;
     count = (int16_t)copy[0];
+    uint16_t fillIndex = 0;
     while(current < count*3)
     {
         int16_t x1 = copy[current++] + offsetX;
@@ -455,6 +465,6 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, uint8_t c
         int16_t y3 = copy[current++] + offsetY;
         current++;
 
-        fillTriangle(x1, y1, x2, y2, x3, y3, color);
+        fillTriangle(x1, y1, x2, y2, x3, y3, fill == nullptr ? 1: fill[fillIndex++]);
     }
 }
