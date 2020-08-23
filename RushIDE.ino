@@ -413,7 +413,7 @@ void tunnel(uint8_t* pattern)
         }
     }
 
-    xPosition++;
+    xPosition+=arduboy.cpuLoad()/100;
     if(xPosition >= 96)
     {
         xPosition = 32;
@@ -468,9 +468,9 @@ void road()
         y+=10;
         arduboy.drawLine(x, y, x+1, y+1, 1);
     }
-    xRoadPosition++;
+    xRoadPosition+=arduboy.cpuLoad()/100;
 
-    if(y == 63) xRoadPosition = xRoadPositionReset;
+    if(y >= 63) xRoadPosition = xRoadPositionReset;
 }
 
 int gScore = 0;
