@@ -8,10 +8,11 @@ Models models;
 Sprites sprites;
 Arduboy2Base arduboy;
 
-const int8_t TOTAL_SCENES = 4;
-const int8_t SKIP_DRAW_SCENE = 2;
+const int8_t TOTAL_SCENES = 5;
+const int8_t SKIP_DRAW_SCENE = 3;
 const int16_t START_ANGLE = 180;
 
+int8_t gPowertrain  = 0;
 int8_t gSelection  = 0;
 int8_t gScene = 0;
 
@@ -98,6 +99,39 @@ void selection()
     }
 }
 
+void powertrain()
+{
+    if(gSelection == 3)
+    {
+        gPowertrain = 2;
+        arduboy.drawPixel(4, 30, 1);
+        sprites.drawSelfMasked(0, 0, powersport, 0);
+    }
+    else
+    {
+        if(arduboy.justPressed(UP_BUTTON))
+        {
+            gPowertrain = 0;
+        }
+        if(arduboy.justPressed(DOWN_BUTTON))
+        {
+            gPowertrain = 1;
+        }
+
+        if(gPowertrain == 0)
+        {
+            arduboy.drawPixel(4, 18, 1);
+        }
+        else
+        {
+            arduboy.drawPixel(4, 42, 1);
+        }
+
+        sprites.drawSelfMasked(0, 0, engine, 0);
+    }
+    
+}
+
 int singlePass(int y, uint8_t* pattern)
 {
     int score = 0;
@@ -164,6 +198,54 @@ void renderModelProfile()
     models.drawCompressedModel(vehicle, modelMap, 0, 270, 0, 1);
 }
 
+int calculateWeight()
+{
+    int weight = 0;
+    for(int x = 0; x < 128; x++)
+    {
+        for(int y = 0; y < 64; y++)
+        {
+            weight += arduboy.getPixel(x, y) > 0 ? 1: 0;
+        }
+    }
+
+    return weight;
+}
+
+int calculatePowerToWeight()
+{
+    int weight = calculateWeight();
+    if(gSelection == 0)
+    {
+       weight *= 4;
+    }
+    else if(gSelection != 3)
+    {
+       weight *= 5;
+    }
+
+
+    int power = 1;
+    switch(gPowertrain)
+    {
+        case 0:
+            power = 172000;
+            break;
+        case 1:
+            power = 223500;
+            weight += 150;
+            break;
+        case 2:
+            power = 74500;
+            break;
+        default:
+            power = weight;
+            break;
+    }
+
+    return power/weight;
+}
+
 int calculateResistance(uint8_t* pattern)
 {
     int score = 0;
@@ -209,6 +291,7 @@ int8_t findPixel()
     return -1;
 }
 
+int gSpaceLeft = 0;
 void modify()
 {
     if(arduboy.pressed(LEFT_BUTTON))
@@ -238,14 +321,16 @@ void modify()
         {
             y--;
             arduboy.drawPixel(pointerX, y, 1);
+            gSpaceLeft++;
         }
     }
 
-    if(arduboy.pressed(DOWN_BUTTON) && y != -1)
+    if(arduboy.pressed(DOWN_BUTTON) && y != -1 && gSpaceLeft)
     {
         if(arduboy.getPixel(pointerX, y+1))
         {
             arduboy.drawPixel(pointerX, y, 0);
+            gSpaceLeft--;
         }
     }
 }
@@ -388,6 +473,9 @@ void road()
     if(y == 63) xRoadPosition = xRoadPositionReset;
 }
 
+int gScore = 0;
+int gRatio = 0;
+uint8_t pattern[32];
 void checkScene()
 {
     int8_t previous = gScene;
@@ -416,14 +504,28 @@ void checkScene()
         arduboy.clear();
         renderModelProfile();
     }
+
+    if(previous != gScene && gScene == 3)
+    {
+        gSpaceLeft = 34;
+        if(gPowertrain == 0)
+        {
+            gSpaceLeft = 48;
+        }
+    }
+
+    if(previous == 3 && gScene == 4)
+    {
+        gRatio = calculatePowerToWeight();
+        gScore = calculateResistance(pattern);
+    }
 }
 
-void drawScore(int score)
+void drawScore(int score, const int16_t y)
 {
     const int16_t x = 128;
-    const int16_t y = 32;
 
-    char buffer[6];
+    char buffer[6] = {0};
     ltoa(score, buffer, 10);
 
     const uint8_t zero = '0';
@@ -440,9 +542,7 @@ void drawScore(int score)
     }
 }
 
-int gScore = 0;
 bool gToggle = false;
-uint8_t pattern[32];
 void loop()
 {
     if (!(arduboy.nextFrame())) return;
@@ -461,12 +561,15 @@ void loop()
         case 1:
             selection();
             pointerX = 32;
+            gPowertrain = 0;
             break;
         case 2:
-            gScore = calculateResistance(pattern);
-            modify();
+            powertrain();
             break;
         case 3:
+            modify();
+            break;
+        case 4:
             if(gToggle)
             {
                 tunnel(pattern);
@@ -475,7 +578,8 @@ void loop()
             {
                 road();
             }
-            drawScore(gScore);
+            drawScore(gRatio, 16);
+            drawScore(gScore, 32);
             break;
     }
 
