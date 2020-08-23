@@ -214,7 +214,7 @@ int calculateWeight()
 
 int calculatePowerToWeight()
 {
-    int weight = calculateWeight();
+    float weight = calculateWeight();
     if(gSelection == 0)
     {
        weight *= 4;
@@ -225,25 +225,25 @@ int calculatePowerToWeight()
     }
 
 
-    int power = 1;
+    int32_t power = 1;
     switch(gPowertrain)
     {
         case 0:
-            power = 172000;
+            power = 17200;
             break;
         case 1:
-            power = 223500;
+            power = 22350;
             weight += 150;
             break;
         case 2:
-            power = 74500;
+            power = 7450;
             break;
         default:
             power = weight;
             break;
     }
 
-    return power/weight;
+    return (power/weight)*10;
 }
 
 int calculateResistance(uint8_t* pattern)
