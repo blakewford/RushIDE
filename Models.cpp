@@ -154,12 +154,15 @@ void Models::begin()
     X_AT_15_DEGREES.shape[1] = 3;
 }
 
+uint16_t fillIndex = 0;
 void Models::drawCompressedModel(const uint8_t* model, const float* map, const uint8_t* fill, int16_t xAngle, int16_t yAngle, int16_t zAngle)
 {
     int16_t count = (int16_t)map[0];
     count*=3;
 
     copy[0] = 3;
+
+    fillIndex = 0;
 
     int16_t ndx = 0;
     while(ndx < count)
@@ -452,7 +455,6 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, const uin
 
     current = 1;
     count = (int16_t)copy[0];
-    uint16_t fillIndex = 0;
     while(current < count*3)
     {
         int16_t x1 = copy[current++] + offsetX;
@@ -465,6 +467,6 @@ void Models::drawModel(int16_t xAngle, int16_t yAngle, int16_t zAngle, const uin
         int16_t y3 = copy[current++] + offsetY;
         current++;
 
-        fillTriangle(x1, y1, x2, y2, x3, y3, fill == nullptr ? 1: fill[fillIndex++]);
+        fillTriangle(x1, y1, x2, y2, x3, y3, fill == nullptr ? 1: pgm_read_byte(&fill[fillIndex++]));
     }
 }

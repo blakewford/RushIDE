@@ -340,12 +340,14 @@ void tunnel(uint8_t* pattern)
     float* modelMap = nullptr;
     uint8_t* vehicle = nullptr;
     uint8_t* name = nullptr;
+    uint8_t* fill = nullptr;
     switch(gSelection)
     {
         case 0:
             modelMap = ndxToValueCar;
             vehicle = car;
             name = overland;
+            fill = fillCar2;
             break;
         case 1:
             modelMap = ndxToValueTruck;
@@ -356,6 +358,7 @@ void tunnel(uint8_t* pattern)
             modelMap = ndxToValueBus;
             vehicle = bus;
             name = burningman;
+            fill = fillBus2;
             break;
         case 3:
              modelMap = ndxToValueBike;
@@ -364,7 +367,7 @@ void tunnel(uint8_t* pattern)
             break;
     }
 
-    models.drawCompressedModel(vehicle, modelMap, nullptr, 15, yAngle, 0);
+    models.drawCompressedModel(vehicle, modelMap, fill, 15, yAngle, 0);
 
     yAngle = 300;
     uint8_t flex = 0;
@@ -428,12 +431,14 @@ void road()
     float* modelMap = nullptr;
     uint8_t* vehicle = nullptr;
     uint8_t* name = nullptr;
+    uint8_t* fill = nullptr;
     switch(gSelection)
     {
         case 0:
             modelMap = ndxToValueCar;
             vehicle = car;
             name = overland;
+            fill = fillCar1;
             break;
         case 1:
             modelMap = ndxToValueTruck;
@@ -444,6 +449,7 @@ void road()
             modelMap = ndxToValueBus;
             vehicle = bus;
             name = burningman;
+            fill = fillBus1;
             break;
         case 3:
              modelMap = ndxToValueBike;
@@ -455,7 +461,7 @@ void road()
     yAngle = 215;
     yAngle += random() % 4;
 
-    models.drawCompressedModel(vehicle, modelMap, nullptr, 15, yAngle, 0);
+    models.drawCompressedModel(vehicle, modelMap, fill, 15, yAngle, 0);
     arduboy.drawLine(10, 0, 74, 63, 1);
     arduboy.drawLine(45, 0, 109, 63, 1);
 
@@ -584,7 +590,6 @@ void loop()
             drawScore(gScore, 32);
             break;
     }
-
     checkScene();
     if(gScene != SKIP_DRAW_SCENE)
     {
