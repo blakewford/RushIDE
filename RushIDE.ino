@@ -364,6 +364,7 @@ void tunnel(uint8_t* pattern)
              modelMap = ndxToValueBike;
             vehicle = bike;
             name = moto;
+            fill = fillBike2;
             break;
     }
 
@@ -416,6 +417,12 @@ void tunnel(uint8_t* pattern)
         }
     }
 
+    if(gSelection == 3)
+    {
+        arduboy.drawPixel(54, 34, 0);
+        arduboy.drawPixel(54, 35, 0);
+    }
+
     xPosition+=arduboy.cpuLoad()/100;
     if(xPosition >= 96)
     {
@@ -455,6 +462,7 @@ void road()
              modelMap = ndxToValueBike;
             vehicle = bike;
             name = moto;
+            fill = fillBike1;
             break;
     }
 
