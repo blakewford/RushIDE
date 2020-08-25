@@ -165,9 +165,9 @@ int singlePass(int y, uint8_t* pattern)
 
 void renderModelProfile()
 {
-    float* modelMap = nullptr;
-    uint8_t* vehicle = nullptr;
-    uint8_t* name = nullptr;
+    const float* modelMap = nullptr;
+    const uint8_t* vehicle = nullptr;
+    const uint8_t* name = nullptr;
 
     int multiplier = 16;
     switch(gSelection)
@@ -337,10 +337,10 @@ void modify()
 
 void tunnel(uint8_t* pattern)
 {
-    float* modelMap = nullptr;
-    uint8_t* vehicle = nullptr;
-    uint8_t* name = nullptr;
-    uint8_t* fill = nullptr;
+    const float* modelMap = nullptr;
+    const uint8_t* vehicle = nullptr;
+    const uint8_t* name = nullptr;
+    const uint8_t* fill = nullptr;
     switch(gSelection)
     {
         case 0:
@@ -428,10 +428,10 @@ const int8_t xRoadPositionReset = 30;
 int8_t xRoadPosition = xRoadPositionReset;
 void road()
 {
-    float* modelMap = nullptr;
-    uint8_t* vehicle = nullptr;
-    uint8_t* name = nullptr;
-    uint8_t* fill = nullptr;
+    const float* modelMap = nullptr;
+    const uint8_t* vehicle = nullptr;
+    const uint8_t* name = nullptr;
+    const uint8_t* fill = nullptr;
     switch(gSelection)
     {
         case 0:
@@ -487,12 +487,12 @@ void checkScene()
     int8_t previous = gScene;
     if(arduboy.justPressed(A_BUTTON))
     {
-        gScene--;
+        gScene++;
     }
 
     if(arduboy.justPressed(B_BUTTON))
     {
-        gScene++;
+        gScene--;
     }
 
     if(gScene <= 0)

@@ -215,17 +215,29 @@ namespace std
     }
 }
 
+uint8_t currentColor = 0;
 uint8_t getColor(uint8_t color)
 {
     if(color == 0) return 0;
     if(color == 1) return 1;
 
-    int fill = random() % color;
-    return fill != 0;
+    if(color == 2)
+    {
+        int fill = random() % color;
+        return fill != 0;
+    }
+
+    uint8_t value = currentColor == 0;
+    currentColor++;
+    if(currentColor == color) currentColor = 0;
+
+    return value;
 }
 
 void fillTriangle(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t x3, int16_t y3, uint8_t color)
 {
+    currentColor = 0;
+
 // Fill a triangle - Bresenham method
 // Original from http://www.sunshine2k.de/coding/java/TriangleRasterization/TriangleRasterization.html
     uint8_t e1,e2;
