@@ -225,9 +225,9 @@ const uint8_t PROGMEM fillBike2[] =
     1,
     1,
     1,
-    0, // Wheel
-    0,
-    0,
+    1, // Wheel
+    1,
+    1,
     1,
     1,
     1,
@@ -250,7 +250,7 @@ const uint8_t PROGMEM fillBike2[] =
     1,
     1,
     1,
-    0, // Wheel
+    1, // Wheel
     1,
     1,
     1,

@@ -353,6 +353,7 @@ void tunnel(uint8_t* pattern)
             modelMap = ndxToValueTruck;
             vehicle = truck;
             name = baja;
+            fill = fillTruck2;
             break;
         case 2:
             modelMap = ndxToValueBus;
@@ -421,6 +422,8 @@ void tunnel(uint8_t* pattern)
     {
         arduboy.drawPixel(54, 34, 0);
         arduboy.drawPixel(54, 35, 0);
+        arduboy.drawPixel(74, 32, 0);
+        arduboy.drawPixel(74, 33, 0);
     }
 
     xPosition+=arduboy.cpuLoad()/100;
@@ -451,6 +454,7 @@ void road()
             modelMap = ndxToValueTruck;
             vehicle = truck;
             name = baja;
+            fill = fillTruck1;
             break;
         case 2:
             modelMap = ndxToValueBus;
@@ -599,6 +603,7 @@ void loop()
             break;
     }
     checkScene();
+
     if(gScene != SKIP_DRAW_SCENE)
     {
         arduboy.display(CLEAR_BUFFER);
